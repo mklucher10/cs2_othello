@@ -28,6 +28,7 @@ Player::~Player() {
 	delete board;
 }
 
+	
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
@@ -40,6 +41,7 @@ Player::~Player() {
  * The move returned must be legal; if there are no valid moves for your side,
  * return NULL.
  */
+
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     /* 
      * TODO: Implement how moves your AI should play here. You should first
