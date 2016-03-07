@@ -11,6 +11,9 @@ class Player {
 private:
 	Board *board;
 	Side side;
+	
+	Move *doHeuristic(Board *newboard, Side nextside);
+	Move *doMiniMax2(Move *opponentsMove, int msLeft);
 
 public:
     Player(Side side);

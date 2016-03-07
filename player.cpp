@@ -43,27 +43,36 @@ Player::~Player() {
  */
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    /* 
-     * TODO: Implement how moves your AI should play here. You should first
-     * process the opponent's opponents move before calculating your own move
-     */ 
-     Board *temp;
-     Move *nextMove;
-     Move *bestMove = NULL;
-     int maxPoints = -64;
-     int points;
-     
     /* Inact opponent's move */
     board->doMove(opponentsMove, (side == BLACK) ? WHITE : BLACK);
     
-    /* See if we have legal moves */
+    /* Find best heuristic move */
+    //Move *nextMove = doHeuristic(board, side);
+    Move *nextMove = doMiniMax2(opponentsMove, msLeft);
+    
+    /* Update the board with most recent move */
+	board->doMove(nextMove, side);
+	
+	return nextMove;
+
+}
+
+/* Implements 2-depth minimax tree
+ */
+Move *Player::doMiniMax2(Move *opponentsMove, int msLeft)
+{
+	Board *temp;
+	Move *nextMove;
+	Move *nextnextMove;
+	Move *bestMove = NULL;
+	int minPoints = 65;
+	int points;
+	
+	/* See if we have legal moves */
     if(!board->hasMoves(side)) return NULL;
-    
-    /* Check possible moves */
-    temp = board->copy();
-    
-    for(int i = 0; i < 8; i++)
-    {
+	
+	for(int i = 0; i < 8; i++)
+	{
 		for(int j = 0; j < 8; j++)
 		{
 			temp = board->copy();
@@ -71,16 +80,58 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 			if(temp->checkMove(nextMove, side))
 			{
 				temp->doMove(nextMove, side);
-				points = temp->count(side) - temp->count((side == BLACK) ? WHITE : BLACK);
+				nextnextMove = doHeuristic(temp, (side == BLACK) ? WHITE : BLACK);
+				temp->doMove(nextnextMove, (side == BLACK) ? WHITE : BLACK);
+				points =  temp->count((side == BLACK) ? WHITE : BLACK) - temp->count(side);
+				if (points < minPoints)
+				{
+					minPoints = points;
+					bestMove = nextMove;
+				}
+			}
+		}
+	}
+	return bestMove;	
+}
+
+/* Implements heuristic algorithm on a given board */
+Move *Player::doHeuristic(Board *newboard, Side nextside)
+{
+/* 
+     * TODO: Implement how moves your AI should play here. You should first
+     * process the opponent's opponents move before calculating your own move
+     */ 
+     Board *temp;
+     Move *nextMove;
+     Move *bestMove = NULL;
+     int maxPoints = -97;
+     int points;
+         
+    /* See if we have legal moves */
+    if(!newboard->hasMoves(nextside)) return NULL;
+    
+    /* Check possible moves */
+    temp = newboard->copy();
+    
+    for(int i = 0; i < 8; i++)
+    {
+		for(int j = 0; j < 8; j++)
+		{
+			temp = newboard->copy();
+			nextMove = new Move(i, j);
+			if(temp->checkMove(nextMove, nextside))
+			{
+				temp->doMove(nextMove, nextside);
+				points = temp->count(nextside) - temp->count((nextside == BLACK) ? WHITE : BLACK);
 				if((i == 0 || i == 7) && (j == 0 || j == 7))
 				{
-					points += 6;
+					points += 3;
 				}
 				if(((i == 1 || i == 6) && (j == 0 || j == 7)) ||
 				((i == 0 || i == 7) && (j == 1 || j == 6)) ||
 				((i == 1 || i == 6) && (j == 1 || j == 6)))
 				{
-					points -= 6;
+					points -= 3;
 				}
 				if (points > maxPoints)
 				{
@@ -90,6 +141,5 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 			}
 		}
 	}
-	board->doMove(bestMove, side);
     return bestMove;
 }
